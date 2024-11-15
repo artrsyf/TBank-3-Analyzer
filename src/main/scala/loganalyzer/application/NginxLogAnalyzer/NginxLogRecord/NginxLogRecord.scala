@@ -18,21 +18,20 @@ case class NginxLogRecord(
   userAgent: String
 )
 
-def parseDate(logDate: String): OffsetDateTime = {
-    // Определяем шаблон даты, соответствующий формату NGINX
+object NginxLogRecord:
+  def parseNginxDate(logDate: String): OffsetDateTime = {
     val formatter = DateTimeFormatter.ofPattern("dd/LLL/yyyy:HH:mm:ss Z", Locale.ENGLISH)
 
-    // Преобразуем строку в OffsetDateTime
     OffsetDateTime.parse(logDate, formatter)
   }
   
-  def processLogLine(logLine: String): NginxLogRecord = 
+  def newLogRecordFromString(logLine: String): NginxLogRecord = 
     val fields = logLine.split(" ")
     val dateString = fields(3).replaceAll("[\\[\\]\"]", "") + " " + fields(4).replaceAll("[\\[\\]\"]", "")
 
     NginxLogRecord(
       remoteAddress = fields(0).replaceAll("[\\[\\]\"]", ""),
-      requestTimeStamp = parseDate(dateString),
+      requestTimeStamp = parseNginxDate(dateString),
       requestMethod = RequestMethod.valueOf(fields(5).replaceAll("[\\[\\]\"]", "")),
       requestUrl = fields(6).replaceAll("[\\[\\]\"]", ""),
       httpVersion = fields(7).replaceAll("[\\[\\]\"]", ""),
@@ -41,3 +40,4 @@ def parseDate(logDate: String): OffsetDateTime = {
       referer = fields(10).replaceAll("[\\[\\]\"]", ""),
       userAgent = fields(11).replaceAll("[\\[\\]\"]", "")
     )
+end NginxLogRecord
