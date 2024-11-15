@@ -4,7 +4,7 @@ import loganalyzer.application.NginxLogAnalyzer.LogReport.LogReport
 import loganalyzer.application.NginxLogAnalyzer.NginxLogRecord.NginxLogRecord
 
 case class ResourcesLogReport(
-  resourceQueriesNumbers: Map[String, Int] = Map.empty
+  private val resourceQueriesNumbers: Map[String, Int] = Map.empty
 ) extends LogReport:
 
   override def show(): Unit = 

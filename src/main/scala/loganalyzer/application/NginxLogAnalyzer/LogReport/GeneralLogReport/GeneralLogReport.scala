@@ -7,11 +7,11 @@ import loganalyzer.application.NginxLogAnalyzer.LogReport.LogReport
 import loganalyzer.application.NginxLogAnalyzer.NginxLogRecord.NginxLogRecord
 
 case class GeneralLogReport(
-  fileName: String,
+  private val fileName: String,
   startDate: OffsetDateTime = OffsetDateTime.MAX,
-  endDate: OffsetDateTime = OffsetDateTime.MIN,
-  queryNumber: Int = 0,
-  averageResponseSize: Int = 0
+  private val endDate: OffsetDateTime = OffsetDateTime.MIN,
+  private val queryNumber: Int = 0,
+  private val averageResponseSize: Int = 0
   // TODO: Есть еще какое-топ последнее поле
 ) extends LogReport:
 
