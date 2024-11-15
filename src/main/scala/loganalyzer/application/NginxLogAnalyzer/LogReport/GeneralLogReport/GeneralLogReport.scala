@@ -18,7 +18,7 @@ case class GeneralLogReport(
   override def show(): Unit = 
     println(fileName)
 
-  def generateMarkdownReport(): String = 
+  override def generateMarkdownReport(): String = 
     s"""
        |#### Общая информация
        |
@@ -32,7 +32,7 @@ case class GeneralLogReport(
        || 95p размера ответа      | ${"not implemented"}b      |
        |""".stripMargin
 
-  def generateAsciidocReport(): String = 
+  override def generateAsciidocReport(): String = 
     s"""
        |==== Общая информация
        |
