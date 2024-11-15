@@ -14,11 +14,9 @@ case class GeneralLogReport(
   averageResponseSize: Int = 0
   // TODO: Есть еще какое-топ последнее поле
 ) extends LogReport:
-  override def show(): Unit = 
-    val report = fileName
-    println(report)
 
-  private val dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+  override def show(): Unit = 
+    println(fileName)
 
   def generateMarkdownReport(): String = 
     s"""
@@ -50,29 +48,31 @@ case class GeneralLogReport(
        ||===
        |""".stripMargin
 
-  private def formatDate(date: OffsetDateTime): String =
-    if date == OffsetDateTime.MAX || date == OffsetDateTime.MIN then "-"
-    else date.format(dateFormatter)
+  def updateWithSingleIteration(logRecord: NginxLogRecord): GeneralLogReport = 
+      val updatedEndDate = if (logRecord.requestTimeStamp.isAfter(endDate)) then 
+        logRecord.requestTimeStamp 
+      else 
+        endDate
 
-def makeGeneralReport(previousLogReport: GeneralLogReport, logRecord: NginxLogRecord): GeneralLogReport = 
-    val updatedEndDate = if (logRecord.requestTimeStamp.isAfter(previousLogReport.endDate)) then 
-      logRecord.requestTimeStamp 
-    else 
-      previousLogReport.endDate
+      val updatedStartDate = if (logRecord.requestTimeStamp.isBefore(startDate)) then 
+        logRecord.requestTimeStamp 
+      else 
+        endDate
 
-    val updatedStartDate = if (logRecord.requestTimeStamp.isBefore(previousLogReport.startDate)) then 
-      logRecord.requestTimeStamp 
-    else 
-      previousLogReport.endDate
-
-    val updatedAverageResponseSize = (
-      previousLogReport.queryNumber * previousLogReport.averageResponseSize
-      + logRecord.responseSize) / (previousLogReport.queryNumber + 1
-    )
+      val updatedAverageResponseSize = (
+        queryNumber * averageResponseSize
+        + logRecord.responseSize) / (queryNumber + 1)
+      
+      copy(
+        endDate = updatedEndDate,
+        startDate = updatedStartDate,
+        queryNumber = queryNumber + 1,
+        averageResponseSize = updatedAverageResponseSize
+      )
     
-    previousLogReport.copy(
-      endDate = updatedEndDate,
-      startDate = updatedStartDate,
-      queryNumber = previousLogReport.queryNumber + 1,
-      averageResponseSize = updatedAverageResponseSize
-    )
+  private def formatDate(date: OffsetDateTime): String =
+    if date == OffsetDateTime.MAX || date == OffsetDateTime.MIN then
+      "-"
+    else
+      date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+end GeneralLogReport
