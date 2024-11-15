@@ -34,7 +34,7 @@ case class GeneralLogReport(
 
   override def generateAsciidocReport(): String = 
     s"""
-       |==== Общая информация
+       ||==== Общая информация
        |
        |[cols="2a,1", options="header"]
        ||===

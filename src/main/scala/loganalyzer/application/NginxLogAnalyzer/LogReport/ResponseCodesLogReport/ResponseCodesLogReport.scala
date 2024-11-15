@@ -11,6 +11,35 @@ case class ResponseCodesLogReport(
   override def show(): Unit = 
     println(responseCodes)
 
+  override def generateMarkdownReport(): String =
+    val reportHeader = s"""
+                          |#### Коды ответа
+                          |
+                          || Код | Имя               | Количество         |
+                          ||:---:|:------------------|-------------------:|""".stripMargin
+
+    val reportBody = responseCodes.foldLeft("") { (acc, current) =>
+      val ((code, name), count) = current
+      acc + s"\n|| $code | $name | $count |"
+    }
+
+    reportHeader + reportBody
+  
+  override def generateAsciidocReport(): String =
+    val reportHeader = s"""
+                          ||==== Коды ответа
+                          |
+                          |[cols="1,2a,1", options="header"]
+                          ||===
+                          || Код | Имя               | Количество""".stripMargin
+
+    val reportBody = responseCodes.foldLeft("") { (acc, current) =>
+      val ((code, name), count) = current
+      acc + s"\n| $code | $name | $count"
+    } + s"\n|==="
+
+    reportHeader + reportBody
+
   def updateWithSingleIteration(logRecord: NginxLogRecord): ResponseCodesLogReport = 
     val responseCodeName = mapResponseCodeToName(logRecord.responseCode)
     val responseResult = (logRecord.responseCode, responseCodeName)

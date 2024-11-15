@@ -10,6 +10,34 @@ case class ResourcesLogReport(
   override def show(): Unit = 
     println(resourceQueriesNumbers)
 
+  override def generateMarkdownReport(): String = 
+    val reportHeader = s"""
+                          |#### Запрашиваемые ресурсы
+                          |
+                          || Ресурс                  | Количество         |
+                          ||:------------------------|-------------------:|""".stripMargin
+                        
+    val reportBody = resourceQueriesNumbers.foldLeft("") { (acc, current) =>
+      val (resourcePath, queryNumber) = current
+      acc + s"\n| `$resourcePath` | $queryNumber |"
+    }
+
+    reportHeader + reportBody
+
+  override def generateAsciidocReport(): String = 
+    val reportHeader = s"""
+                          ||==== Общая информация
+                          |
+                          |[cols="2a,1", options="header"]
+                          ||===""".stripMargin
+    
+    val reportBody = resourceQueriesNumbers.foldLeft("") { (acc, current) =>
+      val (resourcePath, queryNumber) = current
+      acc + s"\n| `$resourcePath` | $queryNumber"
+    } + s"\n|==="
+
+    reportHeader + reportBody
+
   def updateWithSingleIteration(logRecord: NginxLogRecord): ResourcesLogReport = 
     val resourceUrl = logRecord.requestUrl
     val updatedQueriesCount = resourceQueriesNumbers.getOrElse(resourceUrl, 0) + 1
