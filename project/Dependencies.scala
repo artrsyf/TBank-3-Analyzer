@@ -7,4 +7,5 @@ object Dependencies {
 
   val scalastic = "org.scalactic" %% "scalactic" % Versions.scalaTest
   val scalaTest = "org.scalatest" %% "scalatest" % Versions.scalaTest % "test"
+  val scalaOptions = "com.github.scopt" %% "scopt" % "4.1.0"
 }
