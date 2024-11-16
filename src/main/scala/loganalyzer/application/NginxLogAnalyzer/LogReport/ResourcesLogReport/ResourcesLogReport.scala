@@ -26,7 +26,7 @@ case class ResourcesLogReport(
 
   override def generateAsciidocReport(): String = 
     val reportHeader = s"""
-                          ||==== Общая информация
+                          |== Общая информация
                           |
                           |[cols="2a,1", options="header"]
                           ||===""".stripMargin
@@ -38,7 +38,7 @@ case class ResourcesLogReport(
 
     reportHeader + reportBody
 
-  def updateWithSingleIteration(logRecord: NginxLogRecord): ResourcesLogReport = 
+  override def updateWithSingleIteration(logRecord: NginxLogRecord): LogReport = 
     val resourceUrl = logRecord.requestUrl
     val updatedQueriesCount = resourceQueriesNumbers.getOrElse(resourceUrl, 0) + 1
 

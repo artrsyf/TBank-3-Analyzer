@@ -34,7 +34,7 @@ case class GeneralLogReport(
 
   override def generateAsciidocReport(): String = 
     s"""
-       ||==== Общая информация
+       |== Общая информация
        |
        |[cols="2a,1", options="header"]
        ||===
@@ -48,7 +48,7 @@ case class GeneralLogReport(
        ||===
        |""".stripMargin
 
-  def updateWithSingleIteration(logRecord: NginxLogRecord): GeneralLogReport = 
+  override def updateWithSingleIteration(logRecord: NginxLogRecord): LogReport = 
       val updatedEndDate = if (logRecord.requestTimeStamp.isAfter(endDate)) then 
         logRecord.requestTimeStamp 
       else 

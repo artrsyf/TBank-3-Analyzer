@@ -2,7 +2,7 @@ package loganalyzer.application.NginxLogAnalyzer.LogReport.ResponseCodesLogRepor
 
 import loganalyzer.application.NginxLogAnalyzer.LogReport.LogReport
 import loganalyzer.application.NginxLogAnalyzer.NginxLogRecord.NginxLogRecord
-import loganalyzer.shared.constants.Http.mapResponseCodeToName
+import loganalyzer.shared.constants.Http.MapResponseCodeToName
 
 case class ResponseCodesLogReport(
   private val responseCodes: Map[(Int, String), Int] = Map.empty
@@ -27,7 +27,7 @@ case class ResponseCodesLogReport(
   
   override def generateAsciidocReport(): String =
     val reportHeader = s"""
-                          ||==== Коды ответа
+                          |== Коды ответа
                           |
                           |[cols="1,2a,1", options="header"]
                           ||===
@@ -40,8 +40,8 @@ case class ResponseCodesLogReport(
 
     reportHeader + reportBody
 
-  def updateWithSingleIteration(logRecord: NginxLogRecord): ResponseCodesLogReport = 
-    val responseCodeName = mapResponseCodeToName(logRecord.responseCode)
+  override def updateWithSingleIteration(logRecord: NginxLogRecord): LogReport = 
+    val responseCodeName = MapResponseCodeToName(logRecord.responseCode)
     val responseResult = (logRecord.responseCode, responseCodeName)
     val updatedResponsesCount = responseCodes.getOrElse(responseResult, 0) + 1
 
