@@ -1,6 +1,6 @@
 package loganalyzer.shared.constants.Http
 
-val mapResponseCodeToName: Map[Int, String] = Map(
+val MapResponseCodeToName: Map[Int, String] = Map(
   100 -> "Continue",
   101 -> "Switching Protocols",
   102 -> "Processing",
