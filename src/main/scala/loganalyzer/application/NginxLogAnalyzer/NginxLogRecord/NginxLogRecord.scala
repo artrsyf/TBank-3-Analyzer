@@ -18,7 +18,7 @@ case class NginxLogRecord(
   userAgent: String
 )
 
-object NginxLogRecord:  
+object NginxLogRecord:
   def newLogRecordFromString(logLine: String): NginxLogRecord = 
     val fields = logLine.split(" ")
     val dateString = fields(3).replaceAll("[\\[\\]\"]", "") + " " + fields(4).replaceAll("[\\[\\]\"]", "")
@@ -36,8 +36,10 @@ object NginxLogRecord:
     )
   
   private def parseNginxDate(logDate: String): OffsetDateTime = {
-    val formatter = DateTimeFormatter.ofPattern("dd/LLL/yyyy:HH:mm:ss Z", Locale.ENGLISH)
+    val clearedLogDate = logDate.trim()
 
-    OffsetDateTime.parse(logDate, formatter)
+    val formatter = DateTimeFormatter.ofPattern("d/MMM/yyyy:HH:mm:ss Z", Locale.ENGLISH)
+
+    OffsetDateTime.parse(clearedLogDate, formatter)
   }
 end NginxLogRecord

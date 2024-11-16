@@ -29,13 +29,13 @@ object CommandLineParser {
           .optional()
           .valueName("<date>")
           .action((x, c) => c.copy(from = Some(x)))
-          .text("Начальная дата в формате YYYY-MM-DD"),
+          .text("Начальная дата в формате Nginx: DD/MMM/YYYY:HH:MM:SS Z"),
 
         opt[String]("format")
           .optional()
           .valueName("<format>")
           .action((x, c) => c.copy(format = x))
-          .text("Формат вывода: text или markdown")
+          .text("Формат вывода: adoc или markdown")
       )
     }
 
