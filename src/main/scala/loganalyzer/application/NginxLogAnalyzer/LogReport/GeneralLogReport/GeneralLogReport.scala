@@ -8,7 +8,7 @@ import loganalyzer.application.NginxLogAnalyzer.NginxLogRecord.NginxLogRecord
 
 case class GeneralLogReport(
   private val fileName: String,
-  startDate: OffsetDateTime = OffsetDateTime.MAX,
+  private val startDate: OffsetDateTime = OffsetDateTime.MAX,
   private val endDate: OffsetDateTime = OffsetDateTime.MIN,
   private val queryNumber: Int = 0,
   private val averageResponseSize: Int = 0
