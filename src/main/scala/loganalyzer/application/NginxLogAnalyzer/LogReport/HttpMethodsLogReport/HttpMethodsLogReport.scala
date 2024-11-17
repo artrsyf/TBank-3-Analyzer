@@ -7,11 +7,9 @@ case class HttpMethodsLogReport(
   private val httpMethodCounts: Map[String, Int] = Map.empty
 ) extends LogReport:
 
-  // Выводит содержимое отчёта в консоль
   override def show(): Unit = 
     println(httpMethodCounts)
 
-  // Генерация отчёта в формате Markdown
   override def generateMarkdownReport(): String = 
     val reportHeader = s"""
                           |#### HTTP-методы
@@ -26,7 +24,6 @@ case class HttpMethodsLogReport(
 
     reportHeader + reportBody
 
-  // Генерация отчёта в формате Asciidoc
   override def generateAsciidocReport(): String = 
     val reportHeader = s"""
                           |== HTTP-методы
@@ -42,7 +39,6 @@ case class HttpMethodsLogReport(
 
     reportHeader + reportBody
 
-  // Обновление отчёта с новой записью лога
   override def updateWithSingleIteration(logRecord: NginxLogRecord): LogReport = 
     val httpMethod = logRecord.requestMethod.toString
     val updatedCount = httpMethodCounts.getOrElse(httpMethod, 0) + 1

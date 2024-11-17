@@ -10,10 +10,9 @@ case class Config(
   filterValue: Option[String] = None
 )
 
-object CommandLineParser {
+object CommandLineParser:
 
-  def run(args: Array[String]): Either[Error, Config] = {
-    // Конфигурация для парсинга аргументов
+  def run(args: Array[String]): Either[Error, Config] =
     val builder = OParser.builder[Config]
     val parser = {
       import builder._
@@ -68,15 +67,9 @@ object CommandLineParser {
       )
     }
 
-    // Парсинг аргументов и запуск программы
-    OParser.parse(parser, args, Config()) match {
+    OParser.parse(parser, args, Config()) match
       case Some(config) =>
-        // Если парсинг успешен, запускаем анализ логов
         Right(config)
 
       case _ =>
-        Left(Error("Mismatch"))
-        // Если парсинг неуспешен, scopt автоматически выведет сообщение об ошибке
-    }
-  }
-}
+        Left(Error("Argument mismatch"))

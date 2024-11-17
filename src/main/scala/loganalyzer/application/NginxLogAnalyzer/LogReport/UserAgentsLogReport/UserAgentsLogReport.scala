@@ -7,11 +7,9 @@ case class UserAgentsLogReport(
   private val userAgentCounts: Map[String, Int] = Map.empty
 ) extends LogReport:
 
-  // Выводит содержимое отчёта в консоль
   override def show(): Unit = 
     println(userAgentCounts)
 
-  // Генерация отчёта в формате Markdown
   override def generateMarkdownReport(): String = 
     val reportHeader = s"""
                           |#### User-Agents
@@ -26,7 +24,6 @@ case class UserAgentsLogReport(
 
     reportHeader + reportBody
 
-  // Генерация отчёта в формате Asciidoc
   override def generateAsciidocReport(): String = 
     val reportHeader = s"""
                           |== User-Agents
@@ -42,7 +39,6 @@ case class UserAgentsLogReport(
 
     reportHeader + reportBody
 
-  // Обновление отчёта с новой записью лога
   override def updateWithSingleIteration(logRecord: NginxLogRecord): LogReport = 
     val userAgent = logRecord.userAgent
     val userAgentWithoutVersion = userAgent.split("/").head
