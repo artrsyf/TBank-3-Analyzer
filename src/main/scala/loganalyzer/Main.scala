@@ -16,6 +16,8 @@ import loganalyzer.application.NginxLogAnalyzer.NginxLogRecord.NginxLogRecord
 
 import loganalyzer.application.NginxLogAnalyzer.LogReport.GeneralLogReport.GeneralLogReport
 import loganalyzer.application.NginxLogAnalyzer.LogReport.ResponseCodesLogReport.ResponseCodesLogReport
+import loganalyzer.application.NginxLogAnalyzer.LogReport.UserAgentsLogReport.UserAgentsLogReport
+import loganalyzer.application.NginxLogAnalyzer.LogReport.HttpMethodsLogReport.HttpMethodsLogReport
 import loganalyzer.application.NginxLogAnalyzer.LogReport.ResourcesLogReport.ResourcesLogReport
 
 import loganalyzer.application.FileGenerator.FileGenerator
@@ -42,8 +44,10 @@ object Main:
 
         val reportList = Array(
           GeneralLogReport(fileName = filePath.split("/").last),
-          ResourcesLogReport(),
-          ResponseCodesLogReport()
+          ResponseCodesLogReport(),
+          UserAgentsLogReport(),
+          HttpMethodsLogReport(),
+          ResourcesLogReport(tenPopularRecordBound = true)
         )
 
         val logLines = Using(Source.fromInputStream(new FileInputStream(filePath))) { source =>
