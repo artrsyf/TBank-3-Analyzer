@@ -42,6 +42,8 @@ object Main:
           case _ => 
             OffsetDateTime.MIN
 
+        val filterFunction: NginxLogRecord => Boolean = createFilterFunction(config.filterField, config.filterValue)
+
         val reportList = Array(
           GeneralLogReport(fileName = filePath.split("/").last),
           ResponseCodesLogReport(),
@@ -63,8 +65,9 @@ object Main:
             val clearLogLine = logLine.trim()
             val logRecord = NginxLogRecord.newLogRecordFromString(clearLogLine)
 
-            if (logRecord.requestTimeStamp.isAfter(fromDate) ||
-                logRecord.requestTimeStamp.isEqual(fromDate)) then
+            if ((logRecord.requestTimeStamp.isAfter(fromDate) ||
+                logRecord.requestTimeStamp.isEqual(fromDate)) &&
+                filterFunction(logRecord)) then
               reports.map(report => report.updateWithSingleIteration(logRecord))
             else
               reports
@@ -92,3 +95,16 @@ object Main:
             )
         
         FileGenerator.createFile("./report_dist", finalReportName, finalReport)
+
+  private def createFilterFunction(filterField: Option[String], filterValue: Option[String]): NginxLogRecord => Boolean =
+    (filterField, filterValue) match {
+      case (Some("address"), Some(value))    => record => record.remoteAddress.contains(value)
+      case (Some("method"), Some(value)) => record => record.requestMethod.toString.toLowerCase() == value.toLowerCase()
+      case (Some("url"), Some(value))    => record => record.requestUrl.contains(value)
+      case (Some("protocol"), Some(value))    => record => record.httpVersion.toLowerCase() == value.toLowerCase()
+      case (Some("response-code"), Some(value))    => record => record.responseCode == value.toInt
+      case (Some("response-size"), Some(value))    => record => record.responseSize == value.toInt
+      case (Some("referer"), Some(value))    => record => record.referer.toLowerCase() == value.toLowerCase()
+      case (Some("user-agent"), Some(value))    => record => record.userAgent.toLowerCase().contains(value.toLowerCase())
+      case _                             => _ => true
+    }
