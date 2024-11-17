@@ -11,8 +11,7 @@ case class GeneralLogReport(
   private val startDate: OffsetDateTime = OffsetDateTime.MAX,
   private val endDate: OffsetDateTime = OffsetDateTime.MIN,
   private val queryNumber: Int = 0,
-  private val averageResponseSize: Int = 0
-  // TODO: Есть еще какое-топ последнее поле
+  private val responseSizes: List[Int] = List.empty
 ) extends LogReport:
 
   override def show(): Unit = 
@@ -29,7 +28,7 @@ case class GeneralLogReport(
        || Конечная дата           | ${formatDate(endDate)}   |
        || Количество запросов     | $queryNumber       |
        || Средний размер ответа   | ${averageResponseSize}b  |
-       || 95p размера ответа      | ${"not implemented"}b      |
+       || 95p размера ответа      | ${responseSize95Percentile}b      |
        |""".stripMargin
 
   override def generateAsciidocReport(): String = 
@@ -44,7 +43,7 @@ case class GeneralLogReport(
        || Конечная дата           | ${formatDate(endDate)}
        || Количество запросов     | $queryNumber
        || Средний размер ответа   | ${averageResponseSize}b
-       || 95p размера ответа      | ${"not implemented"}b
+       || 95p размера ответа      | ${responseSize95Percentile}b
        ||===
        |""".stripMargin
 
@@ -58,16 +57,12 @@ case class GeneralLogReport(
         logRecord.requestTimeStamp 
       else 
         endDate
-
-      val updatedAverageResponseSize = (
-        queryNumber * averageResponseSize
-        + logRecord.responseSize) / (queryNumber + 1)
       
       copy(
         endDate = updatedEndDate,
         startDate = updatedStartDate,
         queryNumber = queryNumber + 1,
-        averageResponseSize = updatedAverageResponseSize
+        responseSizes = responseSizes :+ logRecord.responseSize
       )
     
   private def formatDate(date: OffsetDateTime): String =
@@ -75,4 +70,17 @@ case class GeneralLogReport(
       "-"
     else
       date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+
+  private def responseSize95Percentile: Int = 
+    if responseSizes.nonEmpty then
+      val sortedSizes = responseSizes.sorted
+      val index = math.ceil(sortedSizes.size * 0.95).toInt - 1
+      sortedSizes(index)
+    else
+      0
+
+  private def averageResponseSize: Int = 
+    if responseSizes.nonEmpty then 
+      responseSizes.sum / responseSizes.size
+    else 0
 end GeneralLogReport
