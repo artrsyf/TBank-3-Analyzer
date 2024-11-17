@@ -33,10 +33,11 @@ case class ResourcesLogReport(
 
   override def generateAsciidocReport(): String = 
     val reportHeader = s"""
-                          |== Общая информация
+                          |== Запрашиваемые ресурсы
                           |
                           |[cols="2a,1", options="header"]
-                          ||===""".stripMargin
+                          ||===
+                          || Ресурс                  | Количество""".stripMargin
 
     val sortedResources = 
       if tenPopularRecordBound then 
