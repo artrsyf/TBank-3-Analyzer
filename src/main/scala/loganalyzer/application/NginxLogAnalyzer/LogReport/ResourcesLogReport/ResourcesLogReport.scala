@@ -4,7 +4,8 @@ import loganalyzer.application.NginxLogAnalyzer.LogReport.LogReport
 import loganalyzer.application.NginxLogAnalyzer.NginxLogRecord.NginxLogRecord
 
 case class ResourcesLogReport(
-  private val resourceQueriesNumbers: Map[String, Int] = Map.empty
+  private val resourceQueriesNumbers: Map[String, Int] = Map.empty,
+  private val tenPopularRecordBound: Boolean = false
 ) extends LogReport:
 
   override def show(): Unit = 
@@ -17,7 +18,13 @@ case class ResourcesLogReport(
                           || Ресурс                  | Количество         |
                           ||:------------------------|-------------------:|""".stripMargin
                         
-    val reportBody = resourceQueriesNumbers.foldLeft("") { (acc, current) =>
+    val sortedResources = 
+      if tenPopularRecordBound then 
+        resourceQueriesNumbers.toList.sortBy(-_._2).take(10)
+      else 
+        resourceQueriesNumbers.toList
+    
+    val reportBody = sortedResources.foldLeft("") { (acc, current) =>
       val (resourcePath, queryNumber) = current
       acc + s"\n| `$resourcePath` | $queryNumber |"
     }
@@ -30,8 +37,14 @@ case class ResourcesLogReport(
                           |
                           |[cols="2a,1", options="header"]
                           ||===""".stripMargin
+
+    val sortedResources = 
+      if tenPopularRecordBound then 
+        resourceQueriesNumbers.toList.sortBy(-_._2).take(10)
+      else 
+        resourceQueriesNumbers.toList
     
-    val reportBody = resourceQueriesNumbers.foldLeft("") { (acc, current) =>
+    val reportBody = sortedResources.foldLeft("") { (acc, current) =>
       val (resourcePath, queryNumber) = current
       acc + s"\n| `$resourcePath` | $queryNumber"
     } + s"\n|==="
