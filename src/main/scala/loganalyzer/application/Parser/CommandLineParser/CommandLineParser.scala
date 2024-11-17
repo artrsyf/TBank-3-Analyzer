@@ -17,29 +17,27 @@ object CommandLineParser:
     val builder = OParser.builder[Config]
     val parser = {
       import builder._
-      
+
       OParser.sequence(
         programName("analyzer"),
         head("Analyzer", "1.0"),
-
         opt[String]("path")
           .required()
           .valueName("<path>")
           .action((x, c) => c.copy(path = x))
-          .text("Путь к логам (Обязательно в кодировке UTF-8), например: ./logs.txt"),
-
+          .text(
+            "Путь к логам (Обязательно в кодировке UTF-8), например: ./logs.txt"
+          ),
         opt[String]("from")
           .optional()
           .valueName("<date>")
           .action((x, c) => c.copy(from = Some(x)))
           .text("Начальная дата в формате Nginx: DD/MMM/YYYY:HH:MM:SS Z"),
-
         opt[String]("format")
           .optional()
           .valueName("<format>")
           .action((x, c) => c.copy(format = x))
           .text("Формат вывода: adoc или markdown"),
-
         opt[String]("filter-field")
           .optional()
           .valueName("<field>")
@@ -60,7 +58,6 @@ object CommandLineParser:
               |  --filter-field method --filter-value "GET"
               |""".stripMargin
           ),
-
         opt[String]("filter-value")
           .optional()
           .valueName("<value>")

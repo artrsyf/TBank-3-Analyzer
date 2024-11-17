@@ -8,22 +8,21 @@ case class ResourcesLogReport(
   private val tenPopularRecordBound: Boolean = false
 ) extends LogReport:
 
-  override def show(): Unit = 
+  override def show(): Unit =
     println(resourceQueriesNumbers)
 
-  override def generateMarkdownReport(): String = 
+  override def generateMarkdownReport(): String =
     val reportHeader = s"""
                           |#### Запрашиваемые ресурсы
                           |
                           || Ресурс                  | Количество         |
                           ||:------------------------|-------------------:|""".stripMargin
-                        
-    val sortedResources = 
-      if tenPopularRecordBound then 
+
+    val sortedResources =
+      if tenPopularRecordBound then
         resourceQueriesNumbers.toList.sortBy(-_._2).take(10)
-      else 
-        resourceQueriesNumbers.toList
-    
+      else resourceQueriesNumbers.toList
+
     val reportBody = sortedResources.foldLeft("") { (acc, current) =>
       val (resourcePath, queryNumber) = current
       acc + s"\n| `$resourcePath` | $queryNumber |"
@@ -31,7 +30,7 @@ case class ResourcesLogReport(
 
     reportHeader + reportBody
 
-  override def generateAsciidocReport(): String = 
+  override def generateAsciidocReport(): String =
     val reportHeader = s"""
                           |== Запрашиваемые ресурсы
                           |
@@ -39,12 +38,11 @@ case class ResourcesLogReport(
                           ||===
                           || Ресурс                  | Количество""".stripMargin
 
-    val sortedResources = 
-      if tenPopularRecordBound then 
+    val sortedResources =
+      if tenPopularRecordBound then
         resourceQueriesNumbers.toList.sortBy(-_._2).take(10)
-      else 
-        resourceQueriesNumbers.toList
-    
+      else resourceQueriesNumbers.toList
+
     val reportBody = sortedResources.foldLeft("") { (acc, current) =>
       val (resourcePath, queryNumber) = current
       acc + s"\n| `$resourcePath` | $queryNumber"
@@ -52,11 +50,13 @@ case class ResourcesLogReport(
 
     reportHeader + reportBody
 
-  override def updateWithSingleIteration(logRecord: NginxLogRecord): LogReport = 
+  override def updateWithSingleIteration(logRecord: NginxLogRecord): LogReport =
     val resourceUrl = logRecord.requestUrl
-    val updatedQueriesCount = resourceQueriesNumbers.getOrElse(resourceUrl, 0) + 1
+    val updatedQueriesCount =
+      resourceQueriesNumbers.getOrElse(resourceUrl, 0) + 1
 
     copy(
-      resourceQueriesNumbers = resourceQueriesNumbers.updated(resourceUrl, updatedQueriesCount)
+      resourceQueriesNumbers =
+        resourceQueriesNumbers.updated(resourceUrl, updatedQueriesCount)
     )
 end ResourcesLogReport

@@ -8,7 +8,7 @@ case class ResponseCodesLogReport(
   private val responseCodes: Map[(Int, String), Int] = Map.empty
 ) extends LogReport:
 
-  override def show(): Unit = 
+  override def show(): Unit =
     println(responseCodes)
 
   override def generateMarkdownReport(): String =
@@ -24,7 +24,7 @@ case class ResponseCodesLogReport(
     }
 
     reportHeader + reportBody
-  
+
   override def generateAsciidocReport(): String =
     val reportHeader = s"""
                           |== Коды ответа
@@ -40,12 +40,13 @@ case class ResponseCodesLogReport(
 
     reportHeader + reportBody
 
-  override def updateWithSingleIteration(logRecord: NginxLogRecord): LogReport = 
+  override def updateWithSingleIteration(logRecord: NginxLogRecord): LogReport =
     val responseCodeName = MapResponseCodeToName(logRecord.responseCode)
     val responseResult = (logRecord.responseCode, responseCodeName)
     val updatedResponsesCount = responseCodes.getOrElse(responseResult, 0) + 1
 
     copy(
-      responseCodes = responseCodes.updated(responseResult, updatedResponsesCount)
+      responseCodes =
+        responseCodes.updated(responseResult, updatedResponsesCount)
     )
 end ResponseCodesLogReport

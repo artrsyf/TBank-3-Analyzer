@@ -24,21 +24,24 @@ import loganalyzer.shared.constants.Report.*
 import loganalyzer.application.parser.CommandLineParser.CommandLineParser
 
 object Main extends IOApp:
-  
+
   def run(args: List[String]) =
     CommandLineParser.run(args).flatMap {
-      case Left(error) => IO.raiseError(new Exception("Error parsing command line arguments"))
+      case Left(error) =>
+        IO.raiseError(new Exception("Error parsing command line arguments"))
       case Right(config) =>
         val filePath = config.path
         val reportFormat = config.format
         val fromDate = config.from match
-          case Some(value) => 
-            val formatter = DateTimeFormatter.ofPattern("d/MMM/yyyy:HH:mm:ss Z", Locale.ENGLISH)
+          case Some(value) =>
+            val formatter = DateTimeFormatter
+              .ofPattern("d/MMM/yyyy:HH:mm:ss Z", Locale.ENGLISH)
             OffsetDateTime.parse(value, formatter)
-          case _ => 
+          case _ =>
             OffsetDateTime.MIN
 
-        val filterFunction: NginxLogRecord => Boolean = createFilterFunction(config.filterField, config.filterValue)
+        val filterFunction: NginxLogRecord => Boolean =
+          createFilterFunction(config.filterField, config.filterValue)
 
         val reportList = Array(
           GeneralLogReport(fileName = filePath.split("/").last),
@@ -49,8 +52,9 @@ object Main extends IOApp:
         )
 
         val logLines: IO[List[String]] = IO {
-          Using(Source.fromInputStream(new FileInputStream(filePath))) { source =>
-            source.getLines().toList
+          Using(Source.fromInputStream(new FileInputStream(filePath))) {
+            source =>
+              source.getLines().toList
           }.getOrElse {
             List.empty[String]
           }
@@ -61,18 +65,23 @@ object Main extends IOApp:
           }
         }
 
-        logLines.flatMap { lines => 
-          val updatedReports = lines.foldLeft(reportList) { (reports, logLine) =>
-            val clearLogLine = logLine.trim()
-            val logRecord = NginxLogRecord.newLogRecordFromString(clearLogLine)
+        logLines.flatMap { lines =>
+          val updatedReports =
+            lines.foldLeft(reportList) { (reports, logLine) =>
+              val clearLogLine = logLine.trim()
+              val logRecord =
+                NginxLogRecord.newLogRecordFromString(clearLogLine)
 
-            if ((logRecord.requestTimeStamp.isAfter(fromDate) ||
-                logRecord.requestTimeStamp.isEqual(fromDate)) &&
-                filterFunction(logRecord)) then
-              reports.map(report => report.updateWithSingleIteration(logRecord))
-            else
-              reports
-          }
+              if (
+                  (logRecord.requestTimeStamp.isAfter(fromDate) ||
+                    logRecord.requestTimeStamp.isEqual(fromDate)) &&
+                  filterFunction(logRecord)
+                )
+              then
+                reports
+                  .map(report => report.updateWithSingleIteration(logRecord))
+              else reports
+            }
 
           val (finalReport, finalReportName) = reportFormat match
             case MarkdownFormatNaming =>
@@ -87,28 +96,40 @@ object Main extends IOApp:
                 updatedReports.foldLeft("") { (acc, current) =>
                   acc + s"\n${current.generateAsciidocReport()}"
                 },
-              "report.adoc"
+                "report.adoc"
               )
-            case _ => 
+            case _ =>
               (
                 "Given unsupported report format.",
                 "report_error_log.txt"
               )
-          
-          FileGenerator.createFile("./report_dist", finalReportName, finalReport) *>
+
+          FileGenerator
+            .createFile("./report_dist", finalReportName, finalReport) *>
             IO(ExitCode.Success)
         }
     }
-      
 
-  private def createFilterFunction(filterField: Option[String], filterValue: Option[String]): NginxLogRecord => Boolean =
+  private def createFilterFunction(
+    filterField: Option[String],
+    filterValue: Option[String]
+  ): NginxLogRecord => Boolean =
     (filterField, filterValue) match
-      case (Some("address"), Some(value))    => record => record.remoteAddress.contains(value)
-      case (Some("method"), Some(value)) => record => record.requestMethod.toString.toLowerCase() == value.toLowerCase()
-      case (Some("url"), Some(value))    => record => record.requestUrl.contains(value)
-      case (Some("protocol"), Some(value))    => record => record.httpVersion.toLowerCase() == value.toLowerCase()
-      case (Some("response-code"), Some(value))    => record => record.responseCode == value.toInt
-      case (Some("response-size"), Some(value))    => record => record.responseSize == value.toInt
-      case (Some("referer"), Some(value))    => record => record.referer.toLowerCase() == value.toLowerCase()
-      case (Some("user-agent"), Some(value))    => record => record.userAgent.toLowerCase().contains(value.toLowerCase())
-      case _                             => _ => true
+      case (Some("address"), Some(value)) =>
+        record => record.remoteAddress.contains(value)
+      case (Some("method"), Some(value)) =>
+        record =>
+          record.requestMethod.toString.toLowerCase() == value.toLowerCase()
+      case (Some("url"), Some(value)) =>
+        record => record.requestUrl.contains(value)
+      case (Some("protocol"), Some(value)) =>
+        record => record.httpVersion.toLowerCase() == value.toLowerCase()
+      case (Some("response-code"), Some(value)) =>
+        record => record.responseCode == value.toInt
+      case (Some("response-size"), Some(value)) =>
+        record => record.responseSize == value.toInt
+      case (Some("referer"), Some(value)) =>
+        record => record.referer.toLowerCase() == value.toLowerCase()
+      case (Some("user-agent"), Some(value)) =>
+        record => record.userAgent.toLowerCase().contains(value.toLowerCase())
+      case _ => _ => true

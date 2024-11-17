@@ -9,16 +9,23 @@ import java.nio.charset.StandardCharsets
 
 object FileGenerator:
 
-  def createFile(directoryPath: String, fileName: String, content: String): IO[Unit] =
+  def createFile(
+    directoryPath: String,
+    fileName: String,
+    content: String
+  ): IO[Unit] =
     val dir = Paths.get(directoryPath)
 
     IO.delay {
       if !Files.exists(dir) then Files.createDirectories(dir)
-    }.flatMap { _ => 
+    }.flatMap { _ =>
       val filePath = Paths.get(directoryPath, fileName)
 
       IO.delay {
-        val writer = new OutputStreamWriter(new FileOutputStream(filePath.toString()), StandardCharsets.UTF_8)
+        val writer = new OutputStreamWriter(
+          new FileOutputStream(filePath.toString()),
+          StandardCharsets.UTF_8
+        )
         try
           writer.write(content)
         finally

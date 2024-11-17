@@ -14,10 +14,10 @@ case class GeneralLogReport(
   private val responseSizes: List[Int] = List.empty
 ) extends LogReport:
 
-  override def show(): Unit = 
+  override def show(): Unit =
     println(fileName)
 
-  override def generateMarkdownReport(): String = 
+  override def generateMarkdownReport(): String =
     s"""
        |#### Общая информация
        |
@@ -31,7 +31,7 @@ case class GeneralLogReport(
        || 95p размера ответа      | ${responseSize95Percentile}b      |
        |""".stripMargin
 
-  override def generateAsciidocReport(): String = 
+  override def generateAsciidocReport(): String =
     s"""
        |== Общая информация
        |
@@ -47,40 +47,36 @@ case class GeneralLogReport(
        ||===
        |""".stripMargin
 
-  override def updateWithSingleIteration(logRecord: NginxLogRecord): LogReport = 
-      val updatedEndDate = if (logRecord.requestTimeStamp.isAfter(endDate)) then 
-        logRecord.requestTimeStamp 
-      else 
-        endDate
+  override def updateWithSingleIteration(logRecord: NginxLogRecord): LogReport =
+    val updatedEndDate =
+      if (logRecord.requestTimeStamp.isAfter(endDate)) then
+        logRecord.requestTimeStamp
+      else endDate
 
-      val updatedStartDate = if (logRecord.requestTimeStamp.isBefore(startDate)) then 
-        logRecord.requestTimeStamp 
-      else 
-        endDate
-      
-      copy(
-        endDate = updatedEndDate,
-        startDate = updatedStartDate,
-        queryNumber = queryNumber + 1,
-        responseSizes = responseSizes :+ logRecord.responseSize
-      )
-    
+    val updatedStartDate =
+      if (logRecord.requestTimeStamp.isBefore(startDate)) then
+        logRecord.requestTimeStamp
+      else endDate
+
+    copy(
+      endDate = updatedEndDate,
+      startDate = updatedStartDate,
+      queryNumber = queryNumber + 1,
+      responseSizes = responseSizes :+ logRecord.responseSize
+    )
+
   private def formatDate(date: OffsetDateTime): String =
-    if date == OffsetDateTime.MAX || date == OffsetDateTime.MIN then
-      "-"
-    else
-      date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+    if date == OffsetDateTime.MAX || date == OffsetDateTime.MIN then "-"
+    else date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
 
-  private def responseSize95Percentile: Int = 
+  private def responseSize95Percentile: Int =
     if responseSizes.nonEmpty then
       val sortedSizes = responseSizes.sorted
       val index = math.ceil(sortedSizes.size * 0.95).toInt - 1
       sortedSizes(index)
-    else
-      0
+    else 0
 
-  private def averageResponseSize: Int = 
-    if responseSizes.nonEmpty then 
-      responseSizes.sum / responseSizes.size
+  private def averageResponseSize: Int =
+    if responseSizes.nonEmpty then responseSizes.sum / responseSizes.size
     else 0
 end GeneralLogReport
