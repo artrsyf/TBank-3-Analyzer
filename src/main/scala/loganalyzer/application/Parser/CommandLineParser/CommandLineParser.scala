@@ -1,5 +1,6 @@
 package loganalyzer.application.parser.CommandLineParser
 
+import cats.effect.IO
 import scopt.OParser
 
 case class Config(
@@ -12,10 +13,11 @@ case class Config(
 
 object CommandLineParser:
 
-  def run(args: Array[String]): Either[Error, Config] =
+  def run(args: List[String]): IO[Either[Error, Config]] = IO {
     val builder = OParser.builder[Config]
     val parser = {
       import builder._
+      
       OParser.sequence(
         programName("analyzer"),
         head("Analyzer", "1.0"),
@@ -70,6 +72,6 @@ object CommandLineParser:
     OParser.parse(parser, args, Config()) match
       case Some(config) =>
         Right(config)
-
       case _ =>
         Left(Error("Argument mismatch"))
+  }

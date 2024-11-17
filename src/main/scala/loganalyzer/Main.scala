@@ -1,3 +1,5 @@
+import cats.effect.{IO, IOApp, ExitCode}
+
 import scala.io.Source
 import scala.util.Using
 import scala.util.{Try, Success, Failure}
@@ -21,11 +23,11 @@ import loganalyzer.shared.constants.Report.*
 
 import loganalyzer.application.parser.CommandLineParser.CommandLineParser
 
-object Main:
+object Main extends IOApp:
   
-  def main(args: Array[String]): Unit =
-    CommandLineParser.run(args) match
-      case Left(error) => 
+  def run(args: List[String]) =
+    CommandLineParser.run(args).flatMap {
+      case Left(error) => IO.raiseError(new Exception("Error parsing command line arguments"))
       case Right(config) =>
         val filePath = config.path
         val reportFormat = config.format
@@ -46,15 +48,21 @@ object Main:
           ResourcesLogReport(tenPopularRecordBound = true)
         )
 
-        val logLines = Using(Source.fromInputStream(new FileInputStream(filePath))) { source =>
-          source.getLines().toList
-        } match
-          case Success(lines) => lines
-          case Failure(exception) =>
-            println(s"Error reading file: ${exception.getMessage}")
-            List.empty
+        val logLines: IO[List[String]] = IO {
+          Using(Source.fromInputStream(new FileInputStream(filePath))) { source =>
+            source.getLines().toList
+          }.getOrElse {
+            List.empty[String]
+          }
+        }.handleErrorWith { e =>
+          IO {
+            println(s"Error reading file: ${e.getMessage}")
+            List.empty[String]
+          }
+        }
 
-        val updatedReports = logLines.foldLeft(reportList) { (reports, logLine) =>
+        logLines.flatMap { lines => 
+          val updatedReports = lines.foldLeft(reportList) { (reports, logLine) =>
             val clearLogLine = logLine.trim()
             val logRecord = NginxLogRecord.newLogRecordFromString(clearLogLine)
 
@@ -66,28 +74,32 @@ object Main:
               reports
           }
 
-        val (finalReport, finalReportName) = reportFormat match
-          case MarkdownFormatNaming =>
-            (
-              updatedReports.foldLeft("") { (acc, current) =>
-                acc + s"\n${current.generateMarkdownReport()}"
-              },
-              "report.md"
-            )
-          case AdocFormatNaming =>
-            (
-              updatedReports.foldLeft("") { (acc, current) =>
-                acc + s"\n${current.generateAsciidocReport()}"
-              },
-            "report.adoc"
-            )
-          case _ => 
-            (
-              "Given unsupported report format.",
-              "report_error_log.txt"
-            )
-        
-        FileGenerator.createFile("./report_dist", finalReportName, finalReport)
+          val (finalReport, finalReportName) = reportFormat match
+            case MarkdownFormatNaming =>
+              (
+                updatedReports.foldLeft("") { (acc, current) =>
+                  acc + s"\n${current.generateMarkdownReport()}"
+                },
+                "report.md"
+              )
+            case AdocFormatNaming =>
+              (
+                updatedReports.foldLeft("") { (acc, current) =>
+                  acc + s"\n${current.generateAsciidocReport()}"
+                },
+              "report.adoc"
+              )
+            case _ => 
+              (
+                "Given unsupported report format.",
+                "report_error_log.txt"
+              )
+          
+          FileGenerator.createFile("./report_dist", finalReportName, finalReport) *>
+            IO(ExitCode.Success)
+        }
+    }
+      
 
   private def createFilterFunction(filterField: Option[String], filterValue: Option[String]): NginxLogRecord => Boolean =
     (filterField, filterValue) match
