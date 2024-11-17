@@ -20,7 +20,7 @@ case class ResponseCodesLogReport(
 
     val reportBody = responseCodes.foldLeft("") { (acc, current) =>
       val ((code, name), count) = current
-      acc + s"\n|| $code | $name | $count |"
+      acc + s"\n| $code | $name | $count |"
     }
 
     reportHeader + reportBody
