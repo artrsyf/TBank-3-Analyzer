@@ -1,16 +1,10 @@
-import cats.effect.{IO, IOApp, ExitCode}
-
 import scala.io.Source
 import scala.util.Using
-import scala.util.{Try, Success, Failure}
 
-import java.io.{FileInputStream, InputStream}
-import java.net.URL
-import java.nio.file.{Files, FileSystems, Paths}
-import java.util.stream.Collectors
-import scala.jdk.CollectionConverters._
-import cats.syntax.all._ 
+import cats.effect.{IO, IOApp, ExitCode}
 
+import java.io.InputStream
+import java.nio.file.Files
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -24,73 +18,10 @@ import loganalyzer.application.NginxLogAnalyzer.LogReport.HttpMethodsLogReport.H
 import loganalyzer.application.NginxLogAnalyzer.LogReport.ResourcesLogReport.ResourcesLogReport
 
 import loganalyzer.application.FileGenerator.FileGenerator
-
-import loganalyzer.shared.constants.Report.*
-
+import loganalyzer.application.FileReader.FileReader
 import loganalyzer.application.parser.CommandLineParser.CommandLineParser
 
-object FileReader:
-
-  def readFileNames(pathsOrUrls: String): IO[List[String]] =
-    // Разделяем строки путей по запятой и обрабатываем каждую отдельно
-    pathsOrUrls.split(",").toList.map(_.trim).traverse { pathOrUrl =>
-      if (isUrl(pathOrUrl)) then
-        IO.pure(List(pathOrUrl)) // Просто возвращаем URL как строку
-      else
-        resolveGlobPatternNames(pathOrUrl)
-    }.map(_.flatten) // Уплощаем список списков
-
-  def readFiles(pathsOrUrls: String): IO[List[InputStream]] =
-    // Разделяем строки путей по запятой и обрабатываем каждую отдельно
-    pathsOrUrls.split(",").toList.map(_.trim).traverse { pathOrUrl =>
-      if isUrl(pathOrUrl) then
-        readUrl(pathOrUrl)
-      else
-        resolveGlobPattern(pathOrUrl)
-    }.map(_.flatten) // Уплощаем список списков
-
-  def resolveGlobPatternNames(pattern: String): IO[List[String]] =
-    IO {
-      val basePath = Paths.get(".").toAbsolutePath.normalize // Определяем рабочую директорию
-
-      val pathMatcher = FileSystems.getDefault.getPathMatcher("glob:" + pattern)
-      val files = Files.walk(basePath) // Используем текущую директорию как корневую
-        .filter(Files.isRegularFile(_))
-        .filter(path => pathMatcher.matches(basePath.relativize(path))) // Сравниваем с учетом базового пути
-        .collect(Collectors.toList())
-        .asScala
-        .toList
-
-      files.map(file => file.getFileName.toString) // Возвращаем полные пути файлов как строки
-    }
-
-  private def isUrl(path: String): Boolean =
-    path.startsWith("http://") || path.startsWith("https://")
-
-  private def readUrl(url: String): IO[List[InputStream]] =
-    IO {
-      val connection = new URL(url).openConnection()
-      val inputStream = connection.getInputStream
-      // Возвращаем InputStream в списке, так как ожидается список в IO
-      List(inputStream)
-    }.handleErrorWith { e =>
-      IO(println(s"Failed to read URL: $url. Error: ${e.getMessage}")) *> IO(List())
-    }
-
-  private def resolveGlobPattern(pattern: String): IO[List[InputStream]] =
-    IO {
-      val basePath = Paths.get(".").toAbsolutePath.normalize // Определяем рабочую директорию
-
-      val pathMatcher = FileSystems.getDefault.getPathMatcher("glob:" + pattern)
-      val files = Files.walk(basePath) // Используем текущую директорию как корневую
-        .filter(Files.isRegularFile(_))
-        .filter(path => pathMatcher.matches(basePath.relativize(path))) // Сравниваем с учетом базового пути
-        .collect(Collectors.toList())
-        .asScala
-        .toList
-
-      files.map(file => new FileInputStream(file.toFile))
-    }
+import loganalyzer.shared.constants.Report.*
 
 object Main extends IOApp:
 
@@ -149,7 +80,7 @@ object Main extends IOApp:
               reportList.map(report =>
                 report match
                   case generalReport: GeneralLogReport =>
-                    generalReport.copy(fileNames = fileNames) // Обновляем имена файлов
+                    generalReport.copy(fileNames = fileNames)
                   case otherReport => otherReport
               )
 
