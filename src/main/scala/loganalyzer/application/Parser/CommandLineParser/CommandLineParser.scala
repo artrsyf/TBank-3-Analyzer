@@ -6,6 +6,7 @@ import scopt.OParser
 case class Config(
   path: String = "",
   from: Option[String] = None,
+  to: Option[String] = None,
   format: String = "text",
   filterField: Option[String] = None,
   filterValue: Option[String] = None
@@ -23,16 +24,26 @@ object CommandLineParser:
         head("Analyzer", "1.0"),
         opt[String]("path")
           .required()
-          .valueName("<path>")
+          .valueName("<path1>,<path2>,...")
           .action((x, c) => c.copy(path = x))
           .text(
-            "Путь к логам (Обязательно в кодировке UTF-8), например: ./logs.txt"
+            """Пути к логам через запятую (Обязательно в кодировке UTF-8):
+              | - Локальные файлы: поддержка glob-шаблонов;
+              | - URL: http://example.com/logs.txt
+              |
+              |Например, --path https://example.com/nginx_logs/nginx_logs,src/main/resources/*.txt 
+              |""".stripMargin
           ),
         opt[String]("from")
           .optional()
           .valueName("<date>")
           .action((x, c) => c.copy(from = Some(x)))
-          .text("Начальная дата в формате Nginx: DD/MMM/YYYY:HH:MM:SS Z"),
+          .text("Начальная дата в формате ISO8601: YYYY-MM-DDTHH:MM:SSZ"),
+        opt[String]("to")
+          .optional()
+          .valueName("<date>")
+          .action((x, c) => c.copy(to = Some(x)))
+          .text("Конечная дата в формате ISO8601: YYYY-MM-DDTHH:MM:SSZ"),
         opt[String]("format")
           .optional()
           .valueName("<format>")
