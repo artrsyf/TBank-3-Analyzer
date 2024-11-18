@@ -78,7 +78,7 @@ case class GeneralLogReport(
 
   private def averageResponseSize: Int =
     if (responseSizes.nonEmpty) {
-      val sum = responseSizes.map(_.toLong).sum // Суммируем значения как Long
-      (sum / responseSizes.size).toInt // Возвращаем результат как Int
+      val sum = responseSizes.map(_.toLong).sum
+      (sum / responseSizes.size).toInt
     } else 0
 end GeneralLogReport
