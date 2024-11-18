@@ -28,7 +28,9 @@ object Main extends IOApp:
   def run(args: List[String]) =
     CommandLineParser.run(args).flatMap {
       case Left(error) =>
-        IO(println("Error parsing command line arguments")) *> IO(ExitCode.Error)
+        IO(println("Error parsing command line arguments")) *> IO(
+          ExitCode.Error
+        )
       case Right(config) =>
         val filePath = config.path
         val reportFormat = config.format
@@ -58,25 +60,28 @@ object Main extends IOApp:
           ResourcesLogReport(tenPopularRecordBound = true)
         )
 
-        val logLines: IO[List[String]] = 
-          FileReader.readFiles(filePath).flatMap { inputStreams =>
-            IO {
-              inputStreams.flatMap { inputStream =>
-                Using(Source.fromInputStream(inputStream)) { source =>
-                  source.getLines().toList
-                }.getOrElse(List.empty[String])
+        val logLines: IO[List[String]] =
+          FileReader
+            .readFiles(filePath)
+            .flatMap { inputStreams =>
+              IO {
+                inputStreams.flatMap { inputStream =>
+                  Using(Source.fromInputStream(inputStream)) { source =>
+                    source.getLines().toList
+                  }.getOrElse(List.empty[String])
+                }
               }
             }
-          }.handleErrorWith { e =>
-            IO {
-              println(s"Error reading file(s): ${e.getMessage}")
-              List.empty[String]
+            .handleErrorWith { e =>
+              IO {
+                println(s"Error reading file(s): ${e.getMessage}")
+                List.empty[String]
+              }
             }
-          }
 
         logLines.flatMap { lines =>
           FileReader.readFileNames(filePath).flatMap { fileNames =>
-            val updatedReports = 
+            val updatedReports =
               reportList.map(report =>
                 report match
                   case generalReport: GeneralLogReport =>
@@ -87,20 +92,23 @@ object Main extends IOApp:
             val updatedReportsAfterProcessing =
               lines.foldLeft(updatedReports) { (reports, logLine) =>
                 val clearLogLine = logLine.trim()
-                val logRecord = NginxLogRecord.newLogRecordFromString(clearLogLine)
+                val logRecord =
+                  NginxLogRecord.newLogRecordFromString(clearLogLine)
 
                 if (
-                  (
-                    logRecord.requestTimeStamp.isAfter(fromDate) ||
-                    logRecord.requestTimeStamp.isEqual(fromDate)
-                  ) &&
-                  (
-                    logRecord.requestTimeStamp.isBefore(toDate) ||
-                    logRecord.requestTimeStamp.isEqual(toDate)
-                  ) &&
-                  filterFunction(logRecord)
-                ) then
-                  reports.map(report => report.updateWithSingleIteration(logRecord))
+                    (
+                      logRecord.requestTimeStamp.isAfter(fromDate) ||
+                        logRecord.requestTimeStamp.isEqual(fromDate)
+                    ) &&
+                    (
+                      logRecord.requestTimeStamp.isBefore(toDate) ||
+                        logRecord.requestTimeStamp.isEqual(toDate)
+                    ) &&
+                    filterFunction(logRecord)
+                  )
+                then
+                  reports
+                    .map(report => report.updateWithSingleIteration(logRecord))
                 else reports
               }
 
@@ -125,8 +133,9 @@ object Main extends IOApp:
                   "report_error_log.txt"
                 )
 
-            FileGenerator.createFile("./report_dist", finalReportName, finalReport) *>
-            IO(ExitCode.Success)
+            FileGenerator
+              .createFile("./report_dist", finalReportName, finalReport) *>
+              IO(ExitCode.Success)
           }
         }
     }
