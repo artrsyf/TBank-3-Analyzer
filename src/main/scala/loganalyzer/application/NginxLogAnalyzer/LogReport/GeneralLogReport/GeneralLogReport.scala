@@ -7,7 +7,7 @@ import loganalyzer.application.NginxLogAnalyzer.LogReport.LogReport
 import loganalyzer.application.NginxLogAnalyzer.NginxLogRecord.NginxLogRecord
 
 case class GeneralLogReport(
-  private val fileName: String,
+  private val fileNames: List[String] = List(),
   private val startDate: OffsetDateTime = OffsetDateTime.MAX,
   private val endDate: OffsetDateTime = OffsetDateTime.MIN,
   private val queryNumber: Int = 0,
@@ -15,7 +15,7 @@ case class GeneralLogReport(
 ) extends LogReport:
 
   override def show(): Unit =
-    println(fileName)
+    println(s"Files: ${fileNames.mkString(", ")}")
 
   override def generateMarkdownReport(): String =
     s"""
@@ -23,7 +23,7 @@ case class GeneralLogReport(
        |
        || Метрика                 | Значение           |
        ||:------------------------|-------------------:|
-       || Файл(-ы)                | `$fileName`        |
+       || Файл(-ы)                | ${fileNames.mkString("`", "`, `", "`")}   |
        || Начальная дата          | ${formatDate(startDate)} |
        || Конечная дата           | ${formatDate(endDate)}   |
        || Количество запросов     | $queryNumber       |
@@ -38,7 +38,7 @@ case class GeneralLogReport(
        |[cols="2a,1", options="header"]
        ||===
        || Метрика                 | Значение
-       || Файл(-ы)                | `$fileName`
+       || Файл(-ы)                | ${fileNames.mkString("`", "`, `", "`")}
        || Начальная дата          | ${formatDate(startDate)}
        || Конечная дата           | ${formatDate(endDate)}
        || Количество запросов     | $queryNumber
@@ -77,6 +77,8 @@ case class GeneralLogReport(
     else 0
 
   private def averageResponseSize: Int =
-    if responseSizes.nonEmpty then responseSizes.sum / responseSizes.size
-    else 0
+    if (responseSizes.nonEmpty) {
+      val sum = responseSizes.map(_.toLong).sum // Суммируем значения как Long
+      (sum / responseSizes.size).toInt // Возвращаем результат как Int
+    } else 0
 end GeneralLogReport
