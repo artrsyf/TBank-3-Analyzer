@@ -1,0 +1,2 @@
+107.180.42.162 - - [13/Nov/2009:17:16:08 +0000] "GET /Operative/Robust/test_resource.test HTTP/1.1" 200 2423 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/5332 (KHTML, like Gecko) Chrome/39.0.890.0 Mobile Safari/5332"
+194.120.229.182 - - [13/Nov/2010:17:16:08 +0000] "GET /Mandatory/test_resource.test HTTP/1.1" 200 965 "-" "Mozilla/5.0 (iPad; CPU OS 7_1_1 like Mac OS X; en-US) AppleWebKit/536.46.3 (KHTML, like Gecko) Version/3.0.5 Mobile/8B112 Safari/6536.46.3"
