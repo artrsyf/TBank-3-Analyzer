@@ -7,7 +7,9 @@ import java.io.{File, FileOutputStream, InputStream}
 import java.nio.file.{Files, Paths}
 
 class FileReaderSpec extends AnyFunSuite:
-  test("FileReader.readFileNames success. Should return file names matching glob pattern"):
+  test(
+    "FileReader.readFileNames success. Should return file names matching glob pattern"
+  ):
     val existingFileName1 = "test1.txt"
     val existingFileName2 = "test2.txt"
     val pattern = "src/main/resources/test/*.txt"
@@ -18,7 +20,9 @@ class FileReaderSpec extends AnyFunSuite:
     assert(result.contains(existingFileName1))
     assert(result.contains(existingFileName2))
 
-  test("FileReader.readFileNames success. Should handle multiple paths and URLs"):
+  test(
+    "FileReader.readFileNames success. Should handle multiple paths and URLs"
+  ):
     val existingFileName1 = "test1.txt"
     val existingFileName2 = "test2.txt"
     val pattern = "src/main/resources/test/*.txt"
@@ -30,7 +34,9 @@ class FileReaderSpec extends AnyFunSuite:
     assert(result.exists(_.contains(existingFileName2)))
     assert(result.contains("https://example.com/logs"))
 
-  test("FileReader.resolveGlobPatternNames success. Should return an empty list for non-matching pattern"):
+  test(
+    "FileReader.resolveGlobPatternNames success. Should return an empty list for non-matching pattern"
+  ):
     val pattern = "nonexistent/*.log"
     val result = FileReader.resolveGlobPatternNames(pattern).unsafeRunSync()
 

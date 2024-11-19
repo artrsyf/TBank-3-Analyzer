@@ -3,7 +3,7 @@ package loganalyzer.application.FileGenerator
 import org.scalatest.funsuite.AnyFunSuite
 import java.nio.file.{Files, Paths}
 import scala.io.Source
-import cats.effect.unsafe.implicits.global   
+import cats.effect.unsafe.implicits.global
 
 class FileGeneratorSpec extends AnyFunSuite:
   private def createTempDirectory(): java.nio.file.Path =
@@ -11,7 +11,9 @@ class FileGeneratorSpec extends AnyFunSuite:
     tempDir.toFile.deleteOnExit()
     tempDir
 
-  test("FileGenerator.createFile success. Should create a file with the specified content"):
+  test(
+    "FileGenerator.createFile success. Should create a file with the specified content"
+  ):
     val tempDir = createTempDirectory()
     val directoryPath = tempDir.toString
     val fileName = "testfile.txt"
@@ -26,7 +28,9 @@ class FileGeneratorSpec extends AnyFunSuite:
     val fileContent = Source.fromFile(filePath.toFile).getLines().mkString("\n")
     assert(fileContent == content)
 
-  test("FileGenerator.createFile success. Should create directory if it does not exist"):
+  test(
+    "FileGenerator.createFile success. Should create directory if it does not exist"
+  ):
     val tempDir = createTempDirectory()
     val nestedDir = Paths.get(tempDir.toString, "nested").toString
     val fileName = "nestedfile.txt"

@@ -24,7 +24,7 @@ class GeneralLogReportSpec extends AnyFunSuite:
     }
 
     val markdownReport = updatedLogReport.generateMarkdownReport()
-    
+
     val expected = s"""
                       |                      
                       |
@@ -41,7 +41,8 @@ class GeneralLogReportSpec extends AnyFunSuite:
                       |""".stripMargin
 
     assert(
-      markdownReport.trim.replaceAll("\\s+", " ") == expected.trim.replaceAll("\\s+", " "),
+      markdownReport.trim.replaceAll("\\s+", " ") == expected.trim
+        .replaceAll("\\s+", " "),
       s"Expected: \n$expected\n\nGot: \n$markdownReport"
     )
 
@@ -82,6 +83,7 @@ class GeneralLogReportSpec extends AnyFunSuite:
                       |""".stripMargin
 
     assert(
-      markdownReport.trim.replaceAll("\\s+", " ") == expected.trim.replaceAll("\\s+", " "),
+      markdownReport.trim.replaceAll("\\s+", " ") == expected.trim
+        .replaceAll("\\s+", " "),
       s"Expected: \n$expected\n\nGot: \n$markdownReport"
     )

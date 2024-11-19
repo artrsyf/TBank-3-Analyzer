@@ -24,7 +24,7 @@ class HttpMethodsLogReportSpec extends AnyFunSuite:
     }
 
     val markdownReport = updatedLogReport.generateMarkdownReport()
-    
+
     val expected = s"""
                       |                      
                       |#### HTTP-методы
@@ -36,7 +36,8 @@ class HttpMethodsLogReportSpec extends AnyFunSuite:
                       |""".stripMargin
 
     assert(
-      markdownReport.trim.replaceAll("\\s+", " ") == expected.trim.replaceAll("\\s+", " "),
+      markdownReport.trim.replaceAll("\\s+", " ") == expected.trim
+        .replaceAll("\\s+", " "),
       s"Expected: \n$expected\n\nGot: \n$markdownReport"
     )
 
@@ -58,7 +59,7 @@ class HttpMethodsLogReportSpec extends AnyFunSuite:
     }
 
     val markdownReport = updatedLogReport.generateAsciidocReport()
-    
+
     val expected = s"""
                       |                      
                       |== HTTP-методы
@@ -72,6 +73,7 @@ class HttpMethodsLogReportSpec extends AnyFunSuite:
                       |""".stripMargin
 
     assert(
-      markdownReport.trim.replaceAll("\\s+", " ") == expected.trim.replaceAll("\\s+", " "),
+      markdownReport.trim.replaceAll("\\s+", " ") == expected.trim
+        .replaceAll("\\s+", " "),
       s"Expected: \n$expected\n\nGot: \n$markdownReport"
     )
