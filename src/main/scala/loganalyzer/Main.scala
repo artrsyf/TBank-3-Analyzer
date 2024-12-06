@@ -60,22 +60,22 @@ object Main extends IOApp:
           ResourcesLogReport(tenPopularRecordBound = true)
         )
 
-        val logLines: IO[List[String]] =
+        val logLines: IO[Iterator[String]] =
           FileReader
             .readFiles(filePath)
             .flatMap { inputStreams =>
               IO {
-                inputStreams.flatMap { inputStream =>
+                inputStreams.iterator.flatMap { inputStream =>
                   Using(Source.fromInputStream(inputStream)) { source =>
-                    source.getLines().toList
-                  }.getOrElse(List.empty[String])
+                    source.getLines()
+                  }.getOrElse(Iterator.empty)
                 }
               }
             }
             .handleErrorWith { e =>
               IO {
                 println(s"Error reading file(s): ${e.getMessage}")
-                List.empty[String]
+                Iterator.empty
               }
             }
 
