@@ -15,9 +15,6 @@ case class GeneralLogReport(
   private val responseSizes: List[Int] = List.empty
 ) extends LogReport:
 
-  override def show(): Unit =
-    println(s"Files: ${fileNames.mkString(", ")}")
-
   override def generateMarkdownReport(): String =
     s"""
        |#### Общая информация

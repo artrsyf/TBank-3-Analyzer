@@ -8,9 +8,6 @@ case class ResponseCodesLogReport(
   private val responseCodes: Map[(Int, String), Int] = Map.empty
 ) extends LogReport:
 
-  override def show(): Unit =
-    println(responseCodes)
-
   override def generateMarkdownReport(): String =
     val reportHeader = s"""
                           |#### Коды ответа

@@ -7,9 +7,6 @@ case class UserAgentsLogReport(
   private val userAgentCounts: Map[String, Int] = Map.empty
 ) extends LogReport:
 
-  override def show(): Unit =
-    println(userAgentCounts)
-
   override def generateMarkdownReport(): String =
     val reportHeader = s"""
                           |#### User-Agents

@@ -8,9 +8,6 @@ case class ResourcesLogReport(
   private val tenPopularRecordBound: Boolean = false
 ) extends LogReport:
 
-  override def show(): Unit =
-    println(resourceQueriesNumbers)
-
   override def generateMarkdownReport(): String =
     val reportHeader = s"""
                           |#### Запрашиваемые ресурсы

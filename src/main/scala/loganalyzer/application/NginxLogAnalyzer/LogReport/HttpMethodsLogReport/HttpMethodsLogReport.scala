@@ -7,9 +7,6 @@ case class HttpMethodsLogReport(
   private val httpMethodCounts: Map[String, Int] = Map.empty
 ) extends LogReport:
 
-  override def show(): Unit =
-    println(httpMethodCounts)
-
   override def generateMarkdownReport(): String =
     val reportHeader = s"""
                           |#### HTTP-методы
