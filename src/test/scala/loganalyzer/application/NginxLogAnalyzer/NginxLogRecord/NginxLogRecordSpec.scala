@@ -3,8 +3,8 @@ package loganalyzer.application.NginxLogAnalyzer.NginxLogRecord
 import org.scalatest.funsuite.AnyFunSuite
 
 import java.time.OffsetDateTime
-import java.time.format.DateTimeFormatter
-import java.util.Locale
+
+import loganalyzer.shared.configs.NginxLogFormatter
 
 import loganalyzer.shared.enums.Http.RequestMethod
 
@@ -19,7 +19,7 @@ class NginxLogRecordSpec extends AnyFunSuite:
 
     val expectedDate = OffsetDateTime.parse(
       "13/Nov/2024:17:16:08 +0000",
-      DateTimeFormatter.ofPattern("d/MMM/yyyy:HH:mm:ss Z", Locale.ENGLISH)
+      NginxLogFormatter
     )
     assert(record.requestTimeStamp == expectedDate)
 

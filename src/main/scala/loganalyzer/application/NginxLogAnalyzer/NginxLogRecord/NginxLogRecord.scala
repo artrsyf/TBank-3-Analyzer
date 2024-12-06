@@ -1,8 +1,8 @@
 package loganalyzer.application.NginxLogAnalyzer.NginxLogRecord
 
 import java.time.OffsetDateTime
-import java.time.format.DateTimeFormatter
-import java.util.Locale
+
+import loganalyzer.shared.configs.NginxLogFormatter
 
 import loganalyzer.shared.enums.Http.RequestMethod
 
@@ -41,8 +41,5 @@ object NginxLogRecord:
   private def parseNginxDate(logDate: String): OffsetDateTime =
     val clearedLogDate = logDate.trim()
 
-    val formatter =
-      DateTimeFormatter.ofPattern("d/MMM/yyyy:HH:mm:ss Z", Locale.ENGLISH)
-
-    OffsetDateTime.parse(clearedLogDate, formatter)
+    OffsetDateTime.parse(clearedLogDate, NginxLogFormatter)
 end NginxLogRecord

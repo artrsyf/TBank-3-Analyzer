@@ -1,7 +1,8 @@
 package loganalyzer.application.NginxLogAnalyzer.LogReport.GeneralLogReport
 
 import java.time.OffsetDateTime
-import java.time.format.DateTimeFormatter
+
+import loganalyzer.shared.configs.ReportFormatter
 
 import loganalyzer.application.NginxLogAnalyzer.LogReport.LogReport
 import loganalyzer.application.NginxLogAnalyzer.NginxLogRecord.NginxLogRecord
@@ -67,7 +68,7 @@ case class GeneralLogReport(
 
   private def formatDate(date: OffsetDateTime): String =
     if date == OffsetDateTime.MAX || date == OffsetDateTime.MIN then "-"
-    else date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+    else date.format(ReportFormatter)
 
   private def responseSize95Percentile: Int =
     if responseSizes.nonEmpty then

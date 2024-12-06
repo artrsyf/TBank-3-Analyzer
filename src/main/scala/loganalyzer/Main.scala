@@ -6,8 +6,8 @@ import cats.effect.{IO, IOApp, ExitCode}
 import java.io.InputStream
 import java.nio.file.Files
 import java.time.OffsetDateTime
-import java.time.format.DateTimeFormatter
-import java.util.Locale
+
+import loganalyzer.shared.configs.FormatterIso8601
 
 import loganalyzer.application.NginxLogAnalyzer.NginxLogRecord.NginxLogRecord
 
@@ -34,18 +34,16 @@ object Main extends IOApp:
       case Right(config) =>
         val filePath = config.path
         val reportFormat = config.format
-        val formatterIso8601 = DateTimeFormatter
-          .ofPattern("yyyy-MM-dd'T'HH:mm:ssX", Locale.ENGLISH)
 
         val fromDate = config.from match
           case Some(value) =>
-            OffsetDateTime.parse(value, formatterIso8601)
+            OffsetDateTime.parse(value, FormatterIso8601)
           case _ =>
             OffsetDateTime.MIN
 
         val toDate = config.to match
           case Some(value) =>
-            OffsetDateTime.parse(value, formatterIso8601)
+            OffsetDateTime.parse(value, FormatterIso8601)
           case _ =>
             OffsetDateTime.MAX
 
