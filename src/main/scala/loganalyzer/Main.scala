@@ -91,7 +91,7 @@ object Main extends IOApp:
               lines.foldLeft(updatedReports) { (reports, logLine) =>
                 val clearLogLine = logLine.trim()
                 val logRecord =
-                  NginxLogRecord.newLogRecordFromString(clearLogLine)
+                  NginxLogRecord(clearLogLine)
 
                 if (
                     (

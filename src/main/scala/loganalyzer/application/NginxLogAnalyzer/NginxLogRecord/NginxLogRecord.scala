@@ -20,7 +20,7 @@ case class NginxLogRecord(
 
 object NginxLogRecord:
 
-  def newLogRecordFromString(logLine: String): NginxLogRecord =
+  def apply(logLine: String): NginxLogRecord =
     val fields = logLine.split(" ")
     val dateString = fields(3).replaceAll("[\\[\\]\"]", "") + " " + fields(4)
       .replaceAll("[\\[\\]\"]", "")
