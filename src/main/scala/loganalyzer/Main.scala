@@ -10,6 +10,7 @@ import java.time.OffsetDateTime
 import loganalyzer.shared.configs.FormatterIso8601
 
 import loganalyzer.application.NginxLogAnalyzer.NginxLogRecord.NginxLogRecord
+import loganalyzer.application.NginxLogAnalyzer.NginxLogRecordFilter.NginxLogRecordFilter
 
 import loganalyzer.application.NginxLogAnalyzer.LogReport.GeneralLogReport.GeneralLogReport
 import loganalyzer.application.NginxLogAnalyzer.LogReport.ResponseCodesLogReport.ResponseCodesLogReport
@@ -47,8 +48,9 @@ object Main extends IOApp:
           case _ =>
             OffsetDateTime.MAX
 
-        val filterFunction: NginxLogRecord => Boolean =
-          createFilterFunction(config.filterField, config.filterValue)
+        val filter = NginxLogRecordFilter()
+        val filterFunction = filter
+          .createFilterFunction(config.filterField, config.filterValue)
 
         val reportList = Array(
           GeneralLogReport(),
