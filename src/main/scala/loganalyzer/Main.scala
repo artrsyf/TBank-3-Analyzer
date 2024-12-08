@@ -18,9 +18,10 @@ import loganalyzer.application.NginxLogAnalyzer.LogReport.UserAgentsLogReport.Us
 import loganalyzer.application.NginxLogAnalyzer.LogReport.HttpMethodsLogReport.HttpMethodsLogReport
 import loganalyzer.application.NginxLogAnalyzer.LogReport.ResourcesLogReport.ResourcesLogReport
 
-import loganalyzer.application.FileGenerator.FileGenerator
-import loganalyzer.application.FileReader.FileReader
+import loganalyzer.application.FileGenerator.DefaultFileGenerator.DefaultFileGenerator
+import loganalyzer.application.FileReader.DefaultFileReader.DefaultFileReader
 import loganalyzer.application.parser.CommandLineParser.CommandLineParser
+import loganalyzer.application.NginxLogProcessor.NginxLogProcessor
 
 import loganalyzer.shared.constants.Report.*
 
@@ -33,133 +34,19 @@ object Main extends IOApp:
           ExitCode.Error
         )
       case Right(config) =>
-        val filePath = config.path
-        val reportFormat = config.format
-
-        val fromDate = config.from match
-          case Some(value) =>
-            OffsetDateTime.parse(value, FormatterIso8601)
-          case _ =>
-            OffsetDateTime.MIN
-
-        val toDate = config.to match
-          case Some(value) =>
-            OffsetDateTime.parse(value, FormatterIso8601)
-          case _ =>
-            OffsetDateTime.MAX
+        val fileReader = DefaultFileReader()
+        val fileGenerator = DefaultFileGenerator()
 
         val filter = NginxLogRecordFilter()
         val filterFunction = filter
           .createFilterFunction(config.filterField, config.filterValue)
 
-        val reportList = Array(
-          GeneralLogReport(),
-          ResponseCodesLogReport(),
-          UserAgentsLogReport(),
-          HttpMethodsLogReport(),
-          ResourcesLogReport(tenPopularRecordBound = true)
+        val logProcessor = NginxLogProcessor(
+          config,
+          fileReader,
+          fileGenerator,
+          filterFunction
         )
 
-        val logLines: IO[Iterator[String]] =
-          FileReader
-            .readFiles(filePath)
-            .flatMap { inputStreams =>
-              IO {
-                inputStreams.iterator.flatMap { inputStream =>
-                  Using(Source.fromInputStream(inputStream)) { source =>
-                    source.getLines()
-                  }.getOrElse(Iterator.empty)
-                }
-              }
-            }
-            .handleErrorWith { e =>
-              IO {
-                println(s"Error reading file(s): ${e.getMessage}")
-                Iterator.empty
-              }
-            }
-
-        logLines.flatMap { lines =>
-          FileReader.readFileNames(filePath).flatMap { fileNames =>
-            val updatedReports =
-              reportList.map(report =>
-                report match
-                  case generalReport: GeneralLogReport =>
-                    generalReport.copy(fileNames = fileNames)
-                  case otherReport => otherReport
-              )
-
-            val updatedReportsAfterProcessing =
-              lines.foldLeft(updatedReports) { (reports, logLine) =>
-                val clearLogLine = logLine.trim()
-                val logRecord =
-                  NginxLogRecord(clearLogLine)
-
-                if (
-                    (
-                      logRecord.requestTimeStamp.isAfter(fromDate) ||
-                        logRecord.requestTimeStamp.isEqual(fromDate)
-                    ) &&
-                    (
-                      logRecord.requestTimeStamp.isBefore(toDate) ||
-                        logRecord.requestTimeStamp.isEqual(toDate)
-                    ) &&
-                    filterFunction(logRecord)
-                  )
-                then
-                  reports
-                    .map(report => report.updateWithSingleIteration(logRecord))
-                else reports
-              }
-
-            val (finalReport, finalReportName) = reportFormat match
-              case MarkdownFormatNaming =>
-                (
-                  updatedReportsAfterProcessing.foldLeft("") { (acc, current) =>
-                    acc + s"\n${current.generateMarkdownReport()}"
-                  },
-                  "report.md"
-                )
-              case AdocFormatNaming =>
-                (
-                  updatedReportsAfterProcessing.foldLeft("") { (acc, current) =>
-                    acc + s"\n${current.generateAsciidocReport()}"
-                  },
-                  "report.adoc"
-                )
-              case _ =>
-                (
-                  "Given unsupported report format.",
-                  "report_error_log.txt"
-                )
-
-            FileGenerator
-              .createFile("./report_dist", finalReportName, finalReport) *>
-              IO(ExitCode.Success)
-          }
-        }
+        logProcessor.generateReport *> IO(ExitCode.Success)
     }
-
-  private def createFilterFunction(
-    filterField: Option[String],
-    filterValue: Option[String]
-  ): NginxLogRecord => Boolean =
-    (filterField, filterValue) match
-      case (Some("address"), Some(value)) =>
-        record => record.remoteAddress.contains(value)
-      case (Some("method"), Some(value)) =>
-        record =>
-          record.requestMethod.toString.toLowerCase() == value.toLowerCase()
-      case (Some("url"), Some(value)) =>
-        record => record.requestUrl.contains(value)
-      case (Some("protocol"), Some(value)) =>
-        record => record.httpVersion.toLowerCase() == value.toLowerCase()
-      case (Some("response-code"), Some(value)) =>
-        record => record.responseCode == value.toInt
-      case (Some("response-size"), Some(value)) =>
-        record => record.responseSize == value.toInt
-      case (Some("referer"), Some(value)) =>
-        record => record.referer.toLowerCase() == value.toLowerCase()
-      case (Some("user-agent"), Some(value)) =>
-        record => record.userAgent.toLowerCase().contains(value.toLowerCase())
-      case _ => _ => true
