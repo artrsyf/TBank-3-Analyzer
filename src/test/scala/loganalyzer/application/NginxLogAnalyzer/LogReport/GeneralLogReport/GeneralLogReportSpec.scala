@@ -14,7 +14,7 @@ class GeneralLogReportSpec extends AnyFunSuite:
     )
 
     val logRecords = logs.map { log =>
-      NginxLogRecord.newLogRecordFromString(log)
+      NginxLogRecord(log)
     }
 
     val initReport: LogReport = GeneralLogReport(fileNames = List("test.txt"))
@@ -54,7 +54,7 @@ class GeneralLogReportSpec extends AnyFunSuite:
     )
 
     val logRecords = logs.map { log =>
-      NginxLogRecord.newLogRecordFromString(log)
+      NginxLogRecord(log)
     }
 
     val initReport: LogReport = GeneralLogReport(fileNames = List("test.txt"))

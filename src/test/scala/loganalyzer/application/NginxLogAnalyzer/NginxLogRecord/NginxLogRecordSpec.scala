@@ -13,7 +13,7 @@ class NginxLogRecordSpec extends AnyFunSuite:
     val nginxLog =
       "117.34.196.86 - - [13/Nov/2024:17:16:08 +0000] \"GET /installation%20Extended/frame/bifurcated-Down-sized.hmtl HTTP/1.1\" 200 2067 \"-\" \"Mozilla/5.0 (Windows 98) AppleWebKit/5360 (KHTML, like Gecko) Chrome/40.0.867.0 Mobile Safari/5360\""
 
-    val record = NginxLogRecord.newLogRecordFromString(nginxLog)
+    val record = NginxLogRecord(nginxLog)
 
     assert(record.remoteAddress == "117.34.196.86")
 

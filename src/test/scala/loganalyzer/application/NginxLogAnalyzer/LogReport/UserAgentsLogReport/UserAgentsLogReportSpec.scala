@@ -14,7 +14,7 @@ class UserAgentsLogReportSpec extends AnyFunSuite:
     )
 
     val logRecords = logs.map { log =>
-      NginxLogRecord.newLogRecordFromString(log)
+      NginxLogRecord(log)
     }
 
     val initReport: LogReport = UserAgentsLogReport()
@@ -49,7 +49,7 @@ class UserAgentsLogReportSpec extends AnyFunSuite:
     )
 
     val logRecords = logs.map { log =>
-      NginxLogRecord.newLogRecordFromString(log)
+      NginxLogRecord(log)
     }
 
     val initReport: LogReport = UserAgentsLogReport()
