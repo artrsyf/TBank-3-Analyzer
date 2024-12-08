@@ -1,12 +1,12 @@
 package loganalyzer.application.NginxLogProcessor
 
 import java.time.OffsetDateTime
-import java.io.InputStream
+import java.io.{BufferedReader, InputStream, InputStreamReader}
 
 import scala.io.Source
 import scala.util.Using
 
-import cats.effect.IO
+import cats.effect.{IO, Resource}
 
 import loganalyzer.application.parser.CommandLineParser.Config
 import loganalyzer.shared.configs.FormatterIso8601
@@ -53,21 +53,22 @@ class NginxLogProcessor(
           ResourcesLogReport(tenPopularRecordBound = true)
         )
     
-    def lazyReadFiles: IO[Iterator[InputStream]] = 
-      fileReader
-        .readFiles(filePath)
-        .flatMap { inputStreams =>
+    def lazyReadFiles: IO[Iterator[String]] = {
+      fileReader.readFiles(filePath).flatMap { inputStreams =>
+        val resource = Resource.make(IO(inputStreams.iterator)) { _ =>
+          IO.unit
+        }
+        
+        resource.use { iterator =>
           IO {
-            // Просто возвращаем итератор по потокам
-            inputStreams.iterator
+            iterator.flatMap { inputStream =>
+              val reader = new BufferedReader(new InputStreamReader(inputStream))
+              Iterator.continually(reader.readLine()).takeWhile(_ != null).map(_.trim)
+            }
           }
         }
-        .handleErrorWith { e =>
-          IO {
-            println(s"Error reading file(s): ${e.getMessage}")
-            Iterator.empty
-          }
-        }
+      }
+    }
 
     def logRecordInvariant(logRecord: NginxLogRecord): Boolean = 
         (
@@ -81,29 +82,30 @@ class NginxLogProcessor(
         filterFunction(logRecord)
 
     def updateReportsAfterProcessing(initReports: Array[LogReport]): IO[Array[LogReport]] = 
-        lazyReadFiles.flatMap { logLinesIterator =>
-            fileReader.readFileNames(filePath).flatMap { fileNames =>
-            val updatedReports = initReports.map {
-                case generalReport: GeneralLogReport =>
-                generalReport.copy(fileNames = fileNames)
-                case otherReport => otherReport
-            }
+      lazyReadFiles.flatMap { logLinesIterator =>
+        fileReader.readFileNames(filePath).flatMap { fileNames =>
+          val updatedReports = initReports.map {
+            case generalReport: GeneralLogReport =>
+              generalReport.copy(fileNames = fileNames)
+            case otherReport => otherReport
+          }
 
-            val updatedReportsAfterProcessing = logLinesIterator.foldLeft(updatedReports) { (reports, logLine) =>
-                val clearLogLine = logLine.trim()
-                val logRecord = NginxLogRecord(clearLogLine)
+          logLinesIterator.foldLeft(IO.pure(updatedReports)) { (ioReports, logLine) =>
+            ioReports.flatMap { reports =>
+              val logRecord = NginxLogRecord(logLine)
 
+              val updatedReports = 
                 if (logRecordInvariant(logRecord)) {
-                reports.map(report => report.updateWithSingleIteration(logRecord))
+                  reports.map(report => report.updateWithSingleIteration(logRecord))
                 } else {
-                reports
+                  reports
                 }
-            }
 
-            // Возвращаем результат внутри IO
-            IO.pure(updatedReportsAfterProcessing)
+              IO.pure(updatedReports)
             }
+          }
         }
+      }
     
     def assemblyReport(updatedReportsAfterProcessing: Array[LogReport]) = 
         val (finalReport, finalReportName) = reportFormat match
